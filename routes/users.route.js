@@ -5,20 +5,15 @@ const middleware = require("../middleware/auth.middleware");
 
 const router = new Router();
 
-router.post("/register", dto.checkCreateUser, controllers.createUserController);
-
-router.get("/login", dto.checkLoginUser, controllers.loginUser);
-
-router.patch(
-  "/update",
-  middleware.isAuthentificated,
-  dto.checkPatchValue,
-  controllers.patchUserController
+router.post(
+  "/api/register",
+  dto.checkCreateUser,
+  controllers.createUserController
 );
-router.delete(
-  "/delete",
+router.post(
+  "/api/login",
   middleware.isAuthentificated,
-  controllers.deleteUserController
+  dto.checkLoginUser,
+  controllers.loginUserController
 );
-
 module.exports = router;
