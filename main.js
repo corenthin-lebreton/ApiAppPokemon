@@ -1,11 +1,8 @@
 const express = require("express");
-require("dotenv").config({
-  path: "/home/corenthin/ApiPokemonApp/database/.env",
-});
-const usersRouter = require("../ApiPokemonApp/routes/users.route");
-const pokedexRouter = require("../ApiPokemonApp/routes/pokedex.route");
-require("../ApiPokemonApp/database/.env");
-require("../ApiPokemonApp/database/database.js");
+require("dotenv").config();
+const usersRouter = require("../ApiAppPokemon/routes/users.route");
+const pokedexRouter = require("../ApiAppPokemon/routes/pokedex.route");
+require("./database/database.js");
 const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3010;

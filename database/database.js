@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const { connect } = mongoose;
-require("dotenv").config({
-  path: "/home/corenthin/ApiPokemonApp/database/.env",
-});
+require("dotenv").config();
 
 try {
   const PASSWORD = process.env.PASSWORD;
