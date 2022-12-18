@@ -11,11 +11,9 @@ const checkCreateUser = async (req, res, next) => {
       return;
     }
     if (userExist) {
-      res
-        .status(400)
-        .json({
-          message: "Nom d'utilisateur déjà utilisé. Veuillez vous connecter.",
-        });
+      res.status(400).json({
+        message: "Nom d'utilisateur déjà utilisé. Veuillez vous connecter.",
+      });
       return;
     }
 
@@ -88,6 +86,7 @@ const checkLoginUser = async (req, res, next) => {
       res.status(400).json({ message: "Tous les champs sont nécessaires" });
       return;
     }
+    next();
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Erreur serveur" });

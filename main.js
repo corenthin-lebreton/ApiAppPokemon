@@ -1,11 +1,11 @@
 const express = require("express");
 require("dotenv").config();
-const usersRouter = require("../ApiAppPokemon/routes/users.route");
-const pokedexRouter = require("../ApiAppPokemon/routes/pokedex.route");
+const usersRouter = require("./routes/users.route");
+const pokedexRouter = require("./routes/pokedex.route");
 require("./database/database.js");
 const cors = require("cors");
 const app = express();
-const PORT = process.env.PORT || 3010;
+const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(cors());

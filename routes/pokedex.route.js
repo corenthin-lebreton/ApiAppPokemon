@@ -7,6 +7,7 @@ const router = new Router();
 
 router.post(
   "/api/create",
+
   middleware.isAuthentificated,
   dto.checkCreatePokedex,
   controllers.createPokedexController
@@ -15,6 +16,7 @@ router.post(
 router.get(
   "/api/pokedex",
   middleware.isAuthentificated,
+  dto.checkGetPokedex,
   controllers.getPokedexController
 );
 
@@ -29,12 +31,6 @@ router.delete(
   "/api/deletePokemon",
   middleware.isAuthentificated,
   controllers.deletePokemonController
-);
-
-router.delete(
-  "/api/deletePokedex",
-  middleware.isAuthentificated,
-  controllers.deletePokedexController
 );
 
 module.exports = router;

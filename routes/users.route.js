@@ -10,10 +10,5 @@ router.post(
   dto.checkCreateUser,
   controllers.createUserController
 );
-router.post(
-  "/api/login",
-  middleware.isAuthentificated,
-  dto.checkLoginUser,
-  controllers.loginUserController
-);
+router.post("/api/login", dto.checkLoginUser, controllers.loginUserController);
 module.exports = router;

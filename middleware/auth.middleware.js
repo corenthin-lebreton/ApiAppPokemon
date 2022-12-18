@@ -1,9 +1,9 @@
 const User = require("../models/userSchema");
 const jwt = require("jsonwebtoken");
-
 const isAuthentificated = async (req, res, next) => {
   try {
     const token = req.headers.authorization;
+    console.log(token);
     if (!token) {
       res.status(401).json({ message: "Vous n'êtes pas authentifié" });
       return;
@@ -34,6 +34,7 @@ const isAuthentificated = async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Erreur auth" });
   }
 };

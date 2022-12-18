@@ -5,7 +5,6 @@ const schema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
-  name: String,
   pokemons: [Object],
   createdAt: {
     type: Date,
