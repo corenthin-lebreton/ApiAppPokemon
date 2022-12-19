@@ -11,7 +11,6 @@ const createPokedexController = async (req, res) => {
 
     res.status(200).json(newPokedex);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
@@ -22,7 +21,16 @@ const getPokedexController = async (req, res) => {
     const pokedex = await Pokedex.findOne({ user: user._id });
     res.status(200).json(pokedex);
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+const getPokedexToAddController = async (req, res) => {
+  try {
+    const user = req.user;
+    const pokedex = await Pokedex.findOne({ user: user._id });
+    res.status(200).json(pokedex);
+  } catch (error) {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
@@ -31,10 +39,11 @@ const addPokemonController = async (req, res) => {
   try {
     const user = req.user;
     const pokedex = await Pokedex.findOne({ user: user._id });
-    const { name, type } = req.body;
+    const { name, id } = req.body;
+    console.log("name " + name);
+    console.log("id " + id);
 
-    await pokedex.pokemons.push({ name, type });
-    console.log(pokedex.pokemons);
+    await pokedex.pokemons.push({ name, id });
     await pokedex.save();
     res.status(200).json(pokedex);
   } catch (error) {
@@ -48,7 +57,13 @@ const deletePokemonController = async (req, res) => {
     const user = req.user;
     const pokedex = await Pokedex.findOne({ user: user._id });
 
-    pokedex.pokemons = [];
+    const { name } = req.body;
+
+    const pokemon = pokedex.pokemons.find((pokemon) => pokemon.name === name);
+
+    const index = pokedex.pokemons.indexOf(pokemon);
+    pokedex.pokemons.splice(index, 1);
+
     await pokedex.save();
     res.status(200).json(pokedex);
 
@@ -58,7 +73,6 @@ const deletePokemonController = async (req, res) => {
     }
     res.status(200).json(pokedex);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
@@ -68,4 +82,5 @@ module.exports = {
   getPokedexController,
   addPokemonController,
   deletePokemonController,
+  getPokedexToAddController,
 };

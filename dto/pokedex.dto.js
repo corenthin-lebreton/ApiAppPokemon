@@ -19,7 +19,10 @@ const checkCreatePokedex = async (req, res, next) => {
 
 const checkAddPokemon = async (req, res, next) => {
   try {
-    const { name, type } = req.body;
+    const { name, id } = req.body;
+    console.log("name " + name);
+    console.log("id " + id);
+
     const user = req.user;
 
     const pokedex = await Pokedex.findOne({ user: user._id });
@@ -46,39 +49,13 @@ const checkAddPokemon = async (req, res, next) => {
       return;
     }
 
-    if (name?.length < 2) {
+    if (id === null || id === undefined) {
       res.status(400).json({ message: "Pokemon invalide" });
-      return;
-    }
-
-    if (name?.length >= 30) {
-      res.status(400).json({ message: "Pokemon invalide" });
-      return;
-    }
-
-    if (typeof name !== "string") {
-      res.status(400).json({ message: "Pokemon invalide" });
-      return;
-    }
-
-    if (typeof type !== "string") {
-      res.status(400).json({ message: "Type invalide" });
-      return;
-    }
-
-    if (type?.length < 2) {
-      res.status(400).json({ message: "Type invalide" });
-      return;
-    }
-
-    if (type?.length >= 30) {
-      res.status(400).json({ message: "Type invalide" });
       return;
     }
 
     next();
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
@@ -90,18 +67,15 @@ const checkGetPokedex = async (req, res, next) => {
     const pokedex = await Pokedex.findOne({ user: user._id });
 
     if (!pokedex) {
-      res
-        .status(400)
-        .json({
-          message:
-            "Vous n'avez pas de pokedex. Ajoutez un pokemon pour en créer un",
-        });
+      res.status(400).json({
+        message:
+          "Vous n'avez pas de pokedex. Ajoutez un pokemon pour en créer un",
+      });
       return;
     }
 
     next();
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };

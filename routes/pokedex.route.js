@@ -20,6 +20,12 @@ router.get(
   controllers.getPokedexController
 );
 
+router.get(
+  "/api/pokedextoadd",
+  middleware.isAuthentificated,
+  controllers.getPokedexToAddController
+);
+
 router.patch(
   "/api/addPokemon",
   middleware.isAuthentificated,
