@@ -39,11 +39,10 @@ const addPokemonController = async (req, res) => {
   try {
     const user = req.user;
     const pokedex = await Pokedex.findOne({ user: user._id });
-    const { name, id } = req.body;
-    console.log("name " + name);
+    const { id } = req.body;
     console.log("id " + id);
 
-    await pokedex.pokemons.push({ name, id });
+    await pokedex.pokemons.push(id);
     await pokedex.save();
     res.status(200).json(pokedex);
   } catch (error) {
@@ -57,20 +56,19 @@ const deletePokemonController = async (req, res) => {
     const user = req.user;
     const pokedex = await Pokedex.findOne({ user: user._id });
 
-    const { name } = req.body;
+    const { id } = req.body;
 
-    const pokemon = pokedex.pokemons.find((pokemon) => pokemon.name === name);
+    const pokemon = pokedex.pokemons.find((pokemon) => pokemon.id === id);
+
+    if (!pokemon) {
+      res.status(400).send("Pokemon non trouvé");
+      return;
+    }
 
     const index = pokedex.pokemons.indexOf(pokemon);
     pokedex.pokemons.splice(index, 1);
 
     await pokedex.save();
-    res.status(200).json(pokedex);
-
-    if (pokemon === null) {
-      res.status(400).send("Pokemon non trouvé");
-      return;
-    }
     res.status(200).json(pokedex);
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur" });

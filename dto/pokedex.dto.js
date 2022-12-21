@@ -19,9 +19,7 @@ const checkCreatePokedex = async (req, res, next) => {
 
 const checkAddPokemon = async (req, res, next) => {
   try {
-    const { name, id } = req.body;
-    console.log("name " + name);
-    console.log("id " + id);
+    const { id } = req.body;
 
     const user = req.user;
 
@@ -32,20 +30,10 @@ const checkAddPokemon = async (req, res, next) => {
       return;
     }
 
-    if (pokedex.pokemons.some((pokemon) => pokemon.name === name)) {
+    if (pokedex.pokemons.includes(id)) {
       res
         .status(400)
-        .json({ message: "Ce pokemon est déjà dans votre pokedex." });
-      return;
-    }
-
-    if (name === null || name === undefined) {
-      res.status(400).json({ message: "Pokemon invalide" });
-      return;
-    }
-
-    if (name?.length <= 0) {
-      res.status(400).json({ message: "Pokemon invalide" });
+        .json({ message: "Vous avez déjà ce pokemon dans votre pokedex." });
       return;
     }
 
