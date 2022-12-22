@@ -40,8 +40,6 @@ const addPokemonController = async (req, res) => {
     const user = req.user;
     const pokedex = await Pokedex.findOne({ user: user._id });
     const { id } = req.body;
-    console.log("id " + id);
-
     await pokedex.pokemons.push(id);
     await pokedex.save();
     res.status(200).json(pokedex);
