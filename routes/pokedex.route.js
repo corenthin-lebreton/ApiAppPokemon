@@ -33,10 +33,4 @@ router.patch(
   controllers.addPokemonController
 );
 
-router.delete(
-  "/api/deletePokemon",
-  middleware.isAuthentificated,
-  controllers.deletePokemonController
-);
-
 module.exports = router;
