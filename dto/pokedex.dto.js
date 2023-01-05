@@ -30,13 +30,6 @@ const checkAddPokemon = async (req, res, next) => {
       return;
     }
 
-    if (pokedex.pokemons.includes(id)) {
-      res
-        .status(400)
-        .json({ message: "Vous avez déjà ce pokemon dans votre pokedex." });
-      return;
-    }
-
     if (id === null || id === undefined) {
       res.status(400).json({ message: "Pokemon invalide" });
       return;
