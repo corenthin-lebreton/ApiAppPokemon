@@ -30,4 +30,18 @@ router.patch(
   controllers.addCoinControllers
 );
 
+//------------------------Creation of game------------------------
+
+router.post(
+  "/api/createRoom",
+  middleware.isAuthentificated,
+  controllers.createGameControllers
+);
+
+router.get(
+  "/api/getRooms",
+  middleware.isAuthentificated,
+  controllers.getAllRoomController
+);
+
 module.exports = router;

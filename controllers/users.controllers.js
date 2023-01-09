@@ -1,6 +1,19 @@
 const User = require("../models/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { LobbyMaker } = require("matchmaking");
+
+function getPlayerKey(player) {
+  console.log("getPlayerKey " + player);
+  return player.id;
+}
+
+function runGame(players) {
+  console.log("Game started with:");
+  console.log("RunGame : " + players);
+}
+
+const lobby = new LobbyMaker(runGame, getPlayerKey);
 
 const createUserController = async (req, res) => {
   try {
@@ -83,10 +96,58 @@ const addCoinControllers = async (req, res) => {
   }
 };
 
+//------------------------------Game Creation--------------------------------
+
+const createGameControllers = (req, res) => {
+  try {
+    const user = req.user;
+    const roomName = req.body;
+    const isPrivate = req.body.isPrivate;
+
+    if (isPrivate === true) {
+      const password = req.body.password;
+      lobby.createRoom(user.id, roomName, {
+        isPrivate: true,
+        password: password,
+        maxLobbySize: 2,
+        autoStartWithMaxSize: true,
+        autoStartWithMinSize: false,
+      });
+    } else {
+      lobby.createRoom(user.id, roomName, {
+        isPrivate: isPrivate,
+        maxLobbySize: 2,
+        autoStartWithMaxSize: true,
+        autoStartWithMinSize: false,
+      });
+    }
+    console.log(lobby.listRooms());
+    res.status(200).json({ message: "room created" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+const getAllRoomController = (req, res) => {
+  try {
+    //get all rooms created from all players
+
+    console.log(lobby.listRooms());
+    res.status(200).json(lobby.listRooms());
+
+    // res.status(200).json(rooms);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
 module.exports = {
   createUserController,
   loginUserController,
   getCoinControllers,
   reduceCoinControllers,
   addCoinControllers,
+  createGameControllers,
+  getAllRoomController,
 };
