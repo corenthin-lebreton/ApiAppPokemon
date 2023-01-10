@@ -101,25 +101,38 @@ const addCoinControllers = async (req, res) => {
 const createGameControllers = (req, res) => {
   try {
     const user = req.user;
-    const roomName = req.body;
-    const isPrivate = req.body.isPrivate;
 
-    if (isPrivate === true) {
-      const password = req.body.password;
-      lobby.createRoom(user.id, roomName, {
-        isPrivate: true,
-        password: password,
-        maxLobbySize: 2,
-        autoStartWithMaxSize: true,
-        autoStartWithMinSize: false,
-      });
+    const { roomName, isPrivate, password } = req.body;
+    console.log("private " + isPrivate);
+
+    if (isPrivate) {
+      console.log("privé");
+
+      lobby.createRoom(
+        user,
+        { name: roomName },
+        {
+          private: false,
+          password: password,
+          maxLobbySize: 2,
+          autoStartWithMaxSize: true,
+          autoStartWithMinSize: false,
+        }
+      );
+      console.log("j'ai crée la room");
     } else {
-      lobby.createRoom(user.id, roomName, {
-        isPrivate: isPrivate,
-        maxLobbySize: 2,
-        autoStartWithMaxSize: true,
-        autoStartWithMinSize: false,
-      });
+      console.log("public");
+      lobby.createRoom(
+        user,
+        { name: roomName },
+        {
+          private: false,
+          maxLobbySize: 2,
+          autoStartWithMaxSize: true,
+          autoStartWithMinSize: false,
+        }
+      );
+      console.log("j'ai crée la room");
     }
     console.log(lobby.listRooms());
     res.status(200).json({ message: "room created" });
@@ -142,6 +155,26 @@ const getAllRoomController = (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
+
+const joinRoomController = (req, res) => {
+  try {
+    const user = req.user;
+    const { password, private, id } = req.body;
+
+    //check if room password is correct when private is true
+
+    if (private === true && password == lobby.getRoom(id).password) {
+      lobby.joinRoom(user, id, password);
+      res.status(200).json({ message: "room joined" });
+    } else if (private === false) {
+      lobby.joinRoom(user, id);
+      res.status(200).json({ message: "room joined" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
 module.exports = {
   createUserController,
   loginUserController,
@@ -150,4 +183,5 @@ module.exports = {
   addCoinControllers,
   createGameControllers,
   getAllRoomController,
+  joinRoomController,
 };

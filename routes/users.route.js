@@ -44,4 +44,10 @@ router.get(
   controllers.getAllRoomController
 );
 
+router.post(
+  "/api/joinRoom",
+  middleware.isAuthentificated,
+  controllers.joinRoomController
+);
+
 module.exports = router;
