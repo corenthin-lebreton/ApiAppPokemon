@@ -60,6 +60,17 @@ const loginUserController = async (req, res) => {
   }
 };
 
+const getUserNameController = async (req, res) => {
+  try {
+    const user = req.user;
+
+    res.status(200).json({ username: user.username });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 const getCoinControllers = async (req, res) => {
   try {
     const user = req.user;
@@ -103,11 +114,7 @@ const createGameControllers = (req, res) => {
     const user = req.user;
 
     const { roomName, isPrivate, password } = req.body;
-    console.log("private " + isPrivate);
-
     if (isPrivate) {
-      console.log("privé");
-
       lobby.createRoom(
         user,
         { name: roomName },
@@ -119,9 +126,7 @@ const createGameControllers = (req, res) => {
           autoStartWithMinSize: false,
         }
       );
-      console.log("j'ai crée la room");
     } else {
-      console.log("public");
       lobby.createRoom(
         user,
         { name: roomName },
@@ -132,7 +137,6 @@ const createGameControllers = (req, res) => {
           autoStartWithMinSize: false,
         }
       );
-      console.log("j'ai crée la room");
     }
     console.log(lobby.listRooms());
     res.status(200).json({ message: "room created" });
@@ -144,12 +148,8 @@ const createGameControllers = (req, res) => {
 
 const getAllRoomController = (req, res) => {
   try {
-    //get all rooms created from all players
-
     console.log(lobby.listRooms());
     res.status(200).json(lobby.listRooms());
-
-    // res.status(200).json(rooms);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -160,8 +160,6 @@ const joinRoomController = (req, res) => {
   try {
     const user = req.user;
     const { password, private, id } = req.body;
-
-    //check if room password is correct when private is true
 
     if (private === true && password == lobby.getRoom(id).password) {
       lobby.joinRoom(user, id, password);
@@ -178,6 +176,7 @@ const joinRoomController = (req, res) => {
 module.exports = {
   createUserController,
   loginUserController,
+  getUserNameController,
   getCoinControllers,
   reduceCoinControllers,
   addCoinControllers,

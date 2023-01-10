@@ -13,6 +13,12 @@ router.post(
 router.post("/api/login", dto.checkLoginUser, controllers.loginUserController);
 
 router.get(
+  "/api/getUserName",
+  middleware.isAuthentificated,
+  controllers.getUserNameController
+);
+
+router.get(
   "/api/getCoin",
   middleware.isAuthentificated,
   controllers.getCoinControllers
