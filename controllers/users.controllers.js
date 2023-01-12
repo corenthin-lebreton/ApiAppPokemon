@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { LobbyMaker } = require("matchmaking");
 
+let playerJoined = false;
+
 function getPlayerKey(player) {
   console.log("getPlayerKey " + player);
   return player.id;
@@ -11,6 +13,7 @@ function getPlayerKey(player) {
 function runGame(players) {
   console.log("Game started with:");
   console.log("RunGame : " + players);
+  playerJoined = true;
 }
 
 const lobby = new LobbyMaker(runGame, getPlayerKey);
@@ -114,31 +117,25 @@ const createGameControllers = (req, res) => {
     const user = req.user;
 
     const { roomName, isPrivate, password } = req.body;
+
+    console.log("create : " + password);
     if (isPrivate) {
-      lobby.createRoom(
-        user,
-        { name: roomName },
-        {
-          private: false,
-          password: password,
-          maxLobbySize: 2,
-          autoStartWithMaxSize: true,
-          autoStartWithMinSize: false,
-        }
-      );
+      lobby.createRoom(user, roomName, {
+        private: false,
+        password: password,
+        maxLobbySize: 2,
+        autoStartWithMaxSize: true,
+        autoStartWithMinSize: false,
+      });
     } else {
-      lobby.createRoom(
-        user,
-        { name: roomName },
-        {
-          private: false,
-          maxLobbySize: 2,
-          autoStartWithMaxSize: true,
-          autoStartWithMinSize: false,
-        }
-      );
+      lobby.createRoom(user, roomName, {
+        private: false,
+        maxLobbySize: 2,
+        autoStartWithMaxSize: true,
+        autoStartWithMinSize: false,
+      });
     }
-    console.log(lobby.listRooms());
+
     res.status(200).json({ message: "room created" });
   } catch (error) {
     console.log(error);
@@ -148,7 +145,6 @@ const createGameControllers = (req, res) => {
 
 const getAllRoomController = (req, res) => {
   try {
-    console.log(lobby.listRooms());
     res.status(200).json(lobby.listRooms());
   } catch (error) {
     console.log(error);
@@ -160,12 +156,18 @@ const joinRoomController = (req, res) => {
   try {
     const user = req.user;
     const { password, private, id } = req.body;
+    if (private === true) {
+      const error = lobby.joinRoom(id, user, password);
 
-    if (private === true && password == lobby.getRoom(id).password) {
-      lobby.joinRoom(user, id, password);
-      res.status(200).json({ message: "room joined" });
+      if (error) {
+        res.status(401).json({ message: "Mot de passe incorrect" });
+      } else {
+        console.log(lobby.listRooms());
+        res.status(200).json({ message: "room joined" });
+      }
     } else if (private === false) {
-      lobby.joinRoom(user, id);
+      lobby.joinRoom(id, user);
+      console.log(lobby.listRooms());
       res.status(200).json({ message: "room joined" });
     }
   } catch (error) {
@@ -173,6 +175,21 @@ const joinRoomController = (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
+
+const isNewPlayerJoined = (req, res) => {
+  try {
+    if (playerJoined === true) {
+      res.status(200).json({ message: "new player joined" });
+      playerJoined = false;
+    } else {
+      res.status(200).json({ message: "no new player joined" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 module.exports = {
   createUserController,
   loginUserController,
@@ -183,4 +200,5 @@ module.exports = {
   createGameControllers,
   getAllRoomController,
   joinRoomController,
+  isNewPlayerJoined,
 };

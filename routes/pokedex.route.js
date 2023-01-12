@@ -33,4 +33,6 @@ router.patch(
   controllers.addPokemonController
 );
 
+router.get("/api/getPokemonsFromPokedex", middleware.isAuthentificated);
+
 module.exports = router;

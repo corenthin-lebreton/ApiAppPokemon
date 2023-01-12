@@ -73,6 +73,8 @@ const deletePokemonController = async (req, res) => {
   }
 };
 
+//Pokebattle ---------------------------------------------
+
 module.exports = {
   createPokedexController,
   getPokedexController,

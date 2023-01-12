@@ -56,4 +56,9 @@ router.post(
   controllers.joinRoomController
 );
 
+router.get(
+  "/api/isWaiting",
+  middleware.isAuthentificated,
+  controllers.isNewPlayerJoined
+);
 module.exports = router;
