@@ -6,6 +6,7 @@ const schema = new Schema({
     ref: "User",
   },
   pokemonsForFight: [Number],
+  isPlayerWon: Boolean,
   createdAt: {
     type: Date,
     default: Date.now,

@@ -229,16 +229,137 @@ const isPlayerSendPokemonsListController = async (req, res) => {
       return player.id !== user.id;
     });
 
-    const contentEnnemy = ArrayForFight.findOne({
-      user: ennemy.id,
+    const contentEnnemy = await ArrayForFight.findOne({
+      user: ennemy._id,
     });
 
-    if (contentEnnemy) {
-      res.status(200).json({ message: "ennemy is ready" });
-    } else {
+    if (!contentEnnemy) {
       res
         .status(200)
         .json({ message: "ennemy is selecting his pokemons for now" });
+    } else {
+      const pokemonsHost = await ArrayForFight.findOne({
+        user: user._id,
+      });
+
+      if (!pokemonsHost) {
+        res.status(200).json({ message: "you need to select your pokemons" });
+      } else {
+        async function getStatsFromPokemons(pokemons) {
+          console.log(pokemons);
+          return await Promise.all(
+            pokemons.pokemonsForFight.map(async (pokemon) => {
+              const res = await fetch(
+                `https://pokeapi.co/api/v2/pokemon/${pokemon}`
+              );
+              const data = await res.json();
+              console.log(data);
+              const hp = data.stats.filter((stat) => {
+                return stat.stat.name === "hp";
+              });
+
+              const attack = data.stats.filter((stat) => {
+                return stat.stat.name === "attack";
+              });
+
+              const defense = data.stats.filter((stat) => {
+                return stat.stat.name === "defense";
+              });
+
+              const speed = data.stats.filter((stat) => {
+                return stat.stat.name === "speed";
+              });
+              return {
+                id: data.id,
+                hp: hp[0].base_stat,
+                attack: attack[0].base_stat,
+                defense: defense[0].base_stat,
+                speed: speed[0].base_stat,
+              };
+            })
+          );
+        }
+
+        const statsHost = await getStatsFromPokemons(pokemonsHost);
+        const statsEnnemy = await getStatsFromPokemons(contentEnnemy);
+
+        function fight() {
+          // let turn = 0;
+          let host = 0;
+          let ennemy = 0;
+
+          while (true) {
+            let hostPokemon = statsHost[host];
+            let ennemyPokemon = statsEnnemy[ennemy];
+
+            while (hostPokemon.hp > 0 && ennemyPokemon.hp > 0) {
+              if (hostPokemon.speed > ennemyPokemon.speed) {
+                ennemyPokemon.hp -= hostPokemon.attack;
+                if (ennemyPokemon.hp > 0) {
+                  hostPokemon.hp -= ennemyPokemon.attack;
+                }
+              } else {
+                hostPokemon.hp -= ennemyPokemon.attack;
+                if (hostPokemon.hp > 0) {
+                  ennemyPokemon.hp -= hostPokemon.attack;
+                }
+              }
+            }
+
+            if (hostPokemon.hp <= 0) {
+              host++;
+              hostPokemon = statsHost[host];
+            } else if (ennemyPokemon.hp <= 0) {
+              ennemy++;
+              ennemyPokemon = statsEnnemy[ennemy];
+            }
+
+            if (host === statsHost.length) {
+              return "ennemy";
+            } else if (ennemy === statsEnnemy.length) {
+              return "host";
+            }
+          }
+        }
+
+        const winner = fight();
+
+        pokemonsHost.isPlayerWon = true;
+
+        await pokemonsHost.save();
+
+        if (contentEnnemy.isPlayerWon) {
+          lobby.deleteRoom(playersInRoom[0].id);
+
+          await ArrayForFight.deleteOne({
+            user: user.id,
+          });
+
+          await ArrayForFight.deleteOne({
+            user: ennemy.id,
+          });
+        }
+        if (winner === "host") {
+          const coinForHost = await User.findOne({
+            _id: user._id,
+          });
+
+          coinForHost.pokedollarz += 1;
+
+          await coinForHost.save();
+          res.status(200).json({
+            message: "you won the game and you get 1 coin",
+            contentEnnemy: contentEnnemy.pokemonsForFight,
+            pokemonHost: pokemonsHost.pokemonsForFight,
+          });
+        } else {
+          res.status(200).json({
+            message: "you lost the game",
+            contentEnnemy: contentEnnemy.pokemonsForFight,
+            pokemonHost: pokemonsHost.pokemonsForFight,
+          });
+        }
+      }
     }
   }
 };
