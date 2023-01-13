@@ -61,4 +61,30 @@ const checkGetPokedex = async (req, res, next) => {
   }
 };
 
-module.exports = { checkCreatePokedex, checkAddPokemon, checkGetPokedex };
+const checkAddPokemonForFight = (req, res, next) => {
+  const { id } = req.body;
+
+  if (!Array.isArray(id)) {
+    res.status(400).json({ message: "Vous devez envoyer un tableau d'id" });
+    return;
+  } else {
+    if (id.every((e) => typeof e !== "number")) {
+      res.status(400).json({ message: "type d'envoi incorrect" });
+      return;
+    } else {
+      if (id.length !== 6) {
+        res.status(400).json({ message: "Vous devez envoyer 6 pokemons" });
+        return;
+      } else {
+        next();
+      }
+    }
+  }
+};
+
+module.exports = {
+  checkCreatePokedex,
+  checkAddPokemon,
+  checkGetPokedex,
+  checkAddPokemonForFight,
+};

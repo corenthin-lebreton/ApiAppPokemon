@@ -1,9 +1,7 @@
 const User = require("../models/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { LobbyMaker } = require("matchmaking");
-
-let playerJoined = false;
+const { LobbyMaker } = require("../packages/matchmaking");
 
 function getPlayerKey(player) {
   console.log("getPlayerKey " + player);
@@ -112,13 +110,12 @@ const addCoinControllers = async (req, res) => {
 
 //------------------------------Game Creation--------------------------------
 
-const createGameControllers = (req, res) => {
+const createGameControllers = async (req, res) => {
   try {
     const user = req.user;
 
     const { roomName, isPrivate, password } = req.body;
 
-    console.log("create : " + password);
     if (isPrivate) {
       lobby.createRoom(user, roomName, {
         private: false,
@@ -152,11 +149,12 @@ const getAllRoomController = (req, res) => {
   }
 };
 
-const joinRoomController = (req, res) => {
+const joinRoomController = async (req, res) => {
   try {
     const user = req.user;
     const { password, private, id } = req.body;
-    if (private === true) {
+
+    if (private) {
       const error = lobby.joinRoom(id, user, password);
 
       if (error) {
@@ -165,8 +163,10 @@ const joinRoomController = (req, res) => {
         console.log(lobby.listRooms());
         res.status(200).json({ message: "room joined" });
       }
-    } else if (private === false) {
-      lobby.joinRoom(id, user);
+    } else if (!private) {
+      console.log(id);
+      const error = lobby.joinRoom(id, user);
+      console.log(error);
       console.log(lobby.listRooms());
       res.status(200).json({ message: "room joined" });
     }
@@ -178,11 +178,28 @@ const joinRoomController = (req, res) => {
 
 const isNewPlayerJoined = (req, res) => {
   try {
-    if (playerJoined === true) {
-      res.status(200).json({ message: "new player joined" });
-      playerJoined = false;
+    const user = req.user;
+
+    const rooms = lobby.listRooms();
+
+    const isPlayerInRoom = rooms.filter(
+      (room) =>
+        room.currentPlayers.findIndex((value) => {
+          return value.id === user.id;
+        }) !== -1
+    );
+
+    if (isPlayerInRoom.length > 0) {
+      console.log("current: " + isPlayerInRoom[0].currentPlayers);
+      if (
+        isPlayerInRoom[0].currentPlayers.length == isPlayerInRoom[0].maxPlayers
+      ) {
+        res.status(200).json({ message: "new player joined" });
+      } else {
+        res.status(200).json({ message: "waiting for new player" });
+      }
     } else {
-      res.status(200).json({ message: "no new player joined" });
+      res.status(200).json({ message: "Error you aren't in a room yet" });
     }
   } catch (error) {
     console.log(error);

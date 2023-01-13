@@ -33,6 +33,11 @@ router.patch(
   controllers.addPokemonController
 );
 
-router.get("/api/getPokemonsFromPokedex", middleware.isAuthentificated);
+router.post(
+  "/api/addPokemonForFight",
+  middleware.isAuthentificated,
+  dto.checkAddPokemonForFight,
+  controllers.AddPokemonForFightController
+);
 
 module.exports = router;

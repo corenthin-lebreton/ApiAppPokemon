@@ -1,5 +1,5 @@
 const Pokedex = require("../models/pokedexSchema");
-
+const ArrayForFight = require("../models/arrayForFight.js");
 const createPokedexController = async (req, res) => {
   try {
     const user = req.user;
@@ -75,10 +75,35 @@ const deletePokemonController = async (req, res) => {
 
 //Pokebattle ---------------------------------------------
 
+const AddPokemonForFightController = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const pokedex = await Pokedex.findOne({ user: user._id });
+
+    const { id } = req.body;
+
+    if (!id.every((e) => pokedex.includes(e))) {
+      res.status(400).send("Pokemon non trouvé");
+      return;
+    } else {
+      const arrayFight = new ArrayForFight();
+
+      arrayFight.pokemonsForFight = id;
+
+      await arrayFight.save();
+      res.status(200).json(arrayFight);
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 module.exports = {
   createPokedexController,
   getPokedexController,
   addPokemonController,
   deletePokemonController,
   getPokedexToAddController,
+  AddPokemonForFightController,
 };
