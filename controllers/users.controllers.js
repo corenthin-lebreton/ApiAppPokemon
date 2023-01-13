@@ -2,6 +2,7 @@ const User = require("../models/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { LobbyMaker } = require("../packages/matchmaking");
+const ArrayForFight = require("../models/arrayForFight.js");
 
 function getPlayerKey(player) {
   console.log("getPlayerKey " + player);
@@ -15,6 +16,8 @@ function runGame(players) {
 }
 
 const lobby = new LobbyMaker(runGame, getPlayerKey);
+
+lobby.createRoom("room1", 2);
 
 const createUserController = async (req, res) => {
   try {
@@ -207,6 +210,39 @@ const isNewPlayerJoined = (req, res) => {
   }
 };
 
+const isPlayerSendPokemonsListController = async (req, res) => {
+  const user = req.user;
+  const rooms = lobby.listRooms();
+
+  const playersInRoom = rooms.filter(
+    (room) =>
+      room.currentPlayers.findIndex((value) => {
+        return value.id === user.id;
+      }) !== -1
+  );
+
+  if (playersInRoom.length === 0) {
+    res.status(200).json({ message: "Error you aren't in a room yet" });
+  } else {
+    const ennemy = playersInRoom[0].currentPlayers.find((player) => {
+      console.log(player);
+      return player.id !== user.id;
+    });
+
+    const contentEnnemy = ArrayForFight.findOne({
+      user: ennemy.id,
+    });
+
+    if (contentEnnemy) {
+      res.status(200).json({ message: "ennemy is ready" });
+    } else {
+      res
+        .status(200)
+        .json({ message: "ennemy is selecting his pokemons for now" });
+    }
+  }
+};
+
 module.exports = {
   createUserController,
   loginUserController,
@@ -218,4 +254,5 @@ module.exports = {
   getAllRoomController,
   joinRoomController,
   isNewPlayerJoined,
+  isPlayerSendPokemonsListController,
 };

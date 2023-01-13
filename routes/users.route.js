@@ -61,4 +61,10 @@ router.get(
   middleware.isAuthentificated,
   controllers.isNewPlayerJoined
 );
+
+router.get(
+  "/api/isPlayerSendListPokemons",
+  middleware.isAuthentificated,
+  controllers.isPlayerSendPokemonsListController
+);
 module.exports = router;

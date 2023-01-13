@@ -61,18 +61,18 @@ const checkGetPokedex = async (req, res, next) => {
   }
 };
 
-const checkAddPokemonForFight = (req, res, next) => {
-  const { id } = req.body;
+const checkAddPokemonForFight = async (req, res, next) => {
+  const { pokemonsForFight } = req.body;
 
-  if (!Array.isArray(id)) {
+  if (!Array.isArray(pokemonsForFight)) {
     res.status(400).json({ message: "Vous devez envoyer un tableau d'id" });
     return;
   } else {
-    if (id.every((e) => typeof e !== "number")) {
+    if (pokemonsForFight.every((e) => typeof e !== "number")) {
       res.status(400).json({ message: "type d'envoi incorrect" });
       return;
     } else {
-      if (id.length !== 6) {
+      if (pokemonsForFight.length !== 6) {
         res.status(400).json({ message: "Vous devez envoyer 6 pokemons" });
         return;
       } else {

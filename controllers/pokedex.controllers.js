@@ -78,23 +78,24 @@ const deletePokemonController = async (req, res) => {
 const AddPokemonForFightController = async (req, res) => {
   try {
     const user = req.user;
+    const { pokemonsForFight } = req.body;
 
     const pokedex = await Pokedex.findOne({ user: user._id });
 
-    const { id } = req.body;
-
-    if (!id.every((e) => pokedex.includes(e))) {
+    if (!pokemonsForFight.every((e) => pokedex.pokemons.includes(e))) {
       res.status(400).send("Pokemon non trouvé");
       return;
     } else {
       const arrayFight = new ArrayForFight();
 
-      arrayFight.pokemonsForFight = id;
+      arrayFight.user = user._id;
+      arrayFight.pokemonsForFight = pokemonsForFight;
 
       await arrayFight.save();
       res.status(200).json(arrayFight);
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
