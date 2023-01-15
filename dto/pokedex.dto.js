@@ -37,6 +37,7 @@ const checkAddPokemon = async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
@@ -57,28 +58,34 @@ const checkGetPokedex = async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
 
 const checkAddPokemonForFight = async (req, res, next) => {
-  const { pokemonsForFight } = req.body;
+  try {
+    const { pokemonsForFight } = req.body;
 
-  if (!Array.isArray(pokemonsForFight)) {
-    res.status(400).json({ message: "Vous devez envoyer un tableau d'id" });
-    return;
-  } else {
-    if (pokemonsForFight.every((e) => typeof e !== "number")) {
-      res.status(400).json({ message: "type d'envoi incorrect" });
+    if (!Array.isArray(pokemonsForFight)) {
+      res.status(400).json({ message: "Vous devez envoyer un tableau d'id" });
       return;
     } else {
-      if (pokemonsForFight.length !== 6) {
-        res.status(400).json({ message: "Vous devez envoyer 6 pokemons" });
+      if (pokemonsForFight.every((e) => typeof e !== "number")) {
+        res.status(400).json({ message: "type d'envoi incorrect" });
         return;
       } else {
-        next();
+        if (pokemonsForFight.length !== 6) {
+          res.status(400).json({ message: "Vous devez envoyer 6 pokemons" });
+          return;
+        } else {
+          next();
+        }
       }
     }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 };
 

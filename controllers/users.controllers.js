@@ -5,19 +5,15 @@ const { LobbyMaker } = require("../packages/matchmaking");
 const ArrayForFight = require("../models/arrayForFight.js");
 
 function getPlayerKey(player) {
-  console.log("getPlayerKey " + player);
   return player.id;
 }
 
 function runGame(players) {
-  console.log("Game started with:");
   console.log("RunGame : " + players);
   playerJoined = true;
 }
 
 const lobby = new LobbyMaker(runGame, getPlayerKey);
-
-lobby.createRoom("room1", 2);
 
 const createUserController = async (req, res) => {
   try {
@@ -163,11 +159,9 @@ const joinRoomController = async (req, res) => {
       if (error) {
         res.status(401).json({ message: "Mot de passe incorrect" });
       } else {
-        console.log(lobby.listRooms());
         res.status(200).json({ message: "room joined" });
       }
     } else if (!private) {
-      console.log(id);
       const error = lobby.joinRoom(id, user);
       console.log(error);
       console.log(lobby.listRooms());
@@ -193,7 +187,6 @@ const isNewPlayerJoined = (req, res) => {
     );
 
     if (isPlayerInRoom.length > 0) {
-      console.log("current: " + isPlayerInRoom[0].currentPlayers);
       if (
         isPlayerInRoom[0].currentPlayers.length == isPlayerInRoom[0].maxPlayers
       ) {
@@ -246,14 +239,12 @@ const isPlayerSendPokemonsListController = async (req, res) => {
         res.status(200).json({ message: "you need to select your pokemons" });
       } else {
         async function getStatsFromPokemons(pokemons) {
-          console.log(pokemons);
           return await Promise.all(
             pokemons.pokemonsForFight.map(async (pokemon) => {
               const res = await fetch(
                 `https://pokeapi.co/api/v2/pokemon/${pokemon}`
               );
               const data = await res.json();
-              console.log(data);
               const hp = data.stats.filter((stat) => {
                 return stat.stat.name === "hp";
               });
@@ -284,7 +275,6 @@ const isPlayerSendPokemonsListController = async (req, res) => {
         const statsEnnemy = await getStatsFromPokemons(contentEnnemy);
 
         function fight() {
-          // let turn = 0;
           let host = 0;
           let ennemy = 0;
 
@@ -294,14 +284,22 @@ const isPlayerSendPokemonsListController = async (req, res) => {
 
             while (hostPokemon.hp > 0 && ennemyPokemon.hp > 0) {
               if (hostPokemon.speed > ennemyPokemon.speed) {
-                ennemyPokemon.hp -= hostPokemon.attack;
+                ennemyPokemon.hp -=
+                  (2 / 5 + 2) * (hostPokemon.attack / ennemyPokemon.defense) +
+                  2;
                 if (ennemyPokemon.hp > 0) {
-                  hostPokemon.hp -= ennemyPokemon.attack;
+                  hostPokemon.hp -=
+                    (2 / 5 + 2) * (ennemyPokemon.attack / hostPokemon.defense) +
+                    2;
                 }
               } else {
-                hostPokemon.hp -= ennemyPokemon.attack;
+                hostPokemon.hp -=
+                  (2 / 5 + 2) * (ennemyPokemon.attack / hostPokemon.defense) +
+                  2;
                 if (hostPokemon.hp > 0) {
-                  ennemyPokemon.hp -= hostPokemon.attack;
+                  ennemyPokemon.hp -=
+                    (2 / 5 + 2) * (hostPokemon.attack / ennemyPokemon.defense) +
+                    2;
                 }
               }
             }
@@ -324,20 +322,27 @@ const isPlayerSendPokemonsListController = async (req, res) => {
 
         const winner = fight();
 
+        const isEnnemyWon = await ArrayForFight.findOne({
+          user: ennemy._id,
+        });
+        console.log(isEnnemyWon);
         pokemonsHost.isPlayerWon = true;
 
         await pokemonsHost.save();
 
-        if (contentEnnemy.isPlayerWon) {
+        if (isEnnemyWon.isPlayerWon) {
           lobby.deleteRoom(playersInRoom[0].id);
 
-          await ArrayForFight.deleteOne({
-            user: user.id,
-          });
+          // await ArrayForFight.deleteOne({
+          //   user: user._id,
+          // });
 
-          await ArrayForFight.deleteOne({
-            user: ennemy.id,
-          });
+          // await ArrayForFight.deleteOne({
+          //   user: ennemy._id,
+          // });
+
+          await contentEnnemy.remove();
+          await pokemonsHost.remove();
         }
         if (winner === "host") {
           const coinForHost = await User.findOne({
@@ -364,6 +369,57 @@ const isPlayerSendPokemonsListController = async (req, res) => {
   }
 };
 
+const getPokemonForFightController = async (req, res) => {
+  try {
+    const user = req.user;
+    const rooms = lobby.listRooms();
+
+    const playersInRoom = rooms.filter(
+      (room) =>
+        room.currentPlayers.findIndex((value) => {
+          return value.id === user.id;
+        }) !== -1
+    );
+
+    if (playersInRoom.length === 0) {
+      res.status(200).json({ message: "Error you aren't in a room yet" });
+    } else {
+      const ennemy = playersInRoom[0].currentPlayers.find((player) => {
+        return player.id !== user.id;
+      });
+
+      const contentEnnemy = await ArrayForFight.findOne({
+        user: ennemy._id,
+      });
+
+      if (!contentEnnemy) {
+        res
+          .status(200)
+          .json({ message: "ennemy is selecting his pokemons for now" });
+        return;
+      }
+
+      const pokedexFightHost = await ArrayForFight.findOne({ user: user._id });
+
+      if (!pokedexFightHost) {
+        res.status(200).json({ message: "you need to select your pokemons" });
+        return;
+      }
+
+      console.log(pokedexFightHost);
+      console.log(contentEnnemy);
+
+      res.status(200).json({
+        pokedexFightHost: pokedexFightHost.pokemonsForFight,
+        pokedexFightEnnemy: contentEnnemy.pokemonsForFight,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 module.exports = {
   createUserController,
   loginUserController,
@@ -376,4 +432,5 @@ module.exports = {
   joinRoomController,
   isNewPlayerJoined,
   isPlayerSendPokemonsListController,
+  getPokemonForFightController,
 };

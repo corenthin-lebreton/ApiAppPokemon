@@ -67,4 +67,10 @@ router.get(
   middleware.isAuthentificated,
   controllers.isPlayerSendPokemonsListController
 );
+
+router.get(
+  "/api/getPokemonForFight",
+  middleware.isAuthentificated,
+  controllers.getPokemonForFightController
+);
 module.exports = router;

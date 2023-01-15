@@ -1,5 +1,6 @@
 const Pokedex = require("../models/pokedexSchema");
 const ArrayForFight = require("../models/arrayForFight.js");
+
 const createPokedexController = async (req, res) => {
   try {
     const user = req.user;
