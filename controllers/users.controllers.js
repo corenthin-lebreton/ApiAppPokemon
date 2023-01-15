@@ -333,14 +333,6 @@ const isPlayerSendPokemonsListController = async (req, res) => {
         if (isEnnemyWon.isPlayerWon) {
           lobby.deleteRoom(playersInRoom[0].id);
 
-          // await ArrayForFight.deleteOne({
-          //   user: user._id,
-          // });
-
-          // await ArrayForFight.deleteOne({
-          //   user: ennemy._id,
-          // });
-
           await contentEnnemy.remove();
           await pokemonsHost.remove();
         }
@@ -369,57 +361,6 @@ const isPlayerSendPokemonsListController = async (req, res) => {
   }
 };
 
-const getPokemonForFightController = async (req, res) => {
-  try {
-    const user = req.user;
-    const rooms = lobby.listRooms();
-
-    const playersInRoom = rooms.filter(
-      (room) =>
-        room.currentPlayers.findIndex((value) => {
-          return value.id === user.id;
-        }) !== -1
-    );
-
-    if (playersInRoom.length === 0) {
-      res.status(200).json({ message: "Error you aren't in a room yet" });
-    } else {
-      const ennemy = playersInRoom[0].currentPlayers.find((player) => {
-        return player.id !== user.id;
-      });
-
-      const contentEnnemy = await ArrayForFight.findOne({
-        user: ennemy._id,
-      });
-
-      if (!contentEnnemy) {
-        res
-          .status(200)
-          .json({ message: "ennemy is selecting his pokemons for now" });
-        return;
-      }
-
-      const pokedexFightHost = await ArrayForFight.findOne({ user: user._id });
-
-      if (!pokedexFightHost) {
-        res.status(200).json({ message: "you need to select your pokemons" });
-        return;
-      }
-
-      console.log(pokedexFightHost);
-      console.log(contentEnnemy);
-
-      res.status(200).json({
-        pokedexFightHost: pokedexFightHost.pokemonsForFight,
-        pokedexFightEnnemy: contentEnnemy.pokemonsForFight,
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-};
-
 module.exports = {
   createUserController,
   loginUserController,
@@ -432,5 +373,4 @@ module.exports = {
   joinRoomController,
   isNewPlayerJoined,
   isPlayerSendPokemonsListController,
-  getPokemonForFightController,
 };
