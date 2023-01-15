@@ -107,7 +107,7 @@ const addCoinControllers = async (req, res) => {
   }
 };
 
-//------------------------------Game Creation--------------------------------
+//------------------------------Game Creation----------------------------------
 
 const createGameControllers = async (req, res) => {
   try {
