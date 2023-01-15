@@ -33,10 +33,11 @@ router.patch(
   controllers.addPokemonController
 );
 
-router.delete(
-  "/api/deletePokemon",
+router.post(
+  "/api/addPokemonForFight",
   middleware.isAuthentificated,
-  controllers.deletePokemonController
+  dto.checkAddPokemonForFight,
+  controllers.AddPokemonForFightController
 );
 
 module.exports = router;

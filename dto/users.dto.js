@@ -92,5 +92,21 @@ const checkLoginUser = async (req, res, next) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
+const checkReduceCoin = async (req, res, next) => {
+  try {
+    const user = req.user;
 
-module.exports = { checkCreateUser, checkLoginUser };
+    if (user.pokedollarz < 1 && user.pokedollarz === 0) {
+      res.status(400).json({
+        message: "Vous n'avez pas assez de pokedollarz pour acheter un pokemon",
+      });
+      return;
+    }
+    next();
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+module.exports = { checkCreateUser, checkLoginUser, checkReduceCoin };
