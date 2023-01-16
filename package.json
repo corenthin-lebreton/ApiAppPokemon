@@ -18,6 +18,7 @@
     "jsonwebtoken": "^8.5.1",
     "localStorage": "^1.0.4",
     "mongoose": "^6.8.0",
+    "node-fetch": "^2.6.8",
     "nodemon": "^2.0.20"
   }
 }

@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { LobbyMaker } = require("../packages/matchmaking");
 const ArrayForFight = require("../models/arrayForFight.js");
-
+const fetch = require("node-fetch");
 function getPlayerKey(player) {
   return player.id;
 }
